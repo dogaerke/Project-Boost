@@ -5,10 +5,18 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    Rigidbody myRigidBody;
-    AudioSource audioSource;
+
     [SerializeField] float mainThrust = 500f;
     [SerializeField] float rotationThrust = 100f;
+    [SerializeField] AudioClip rocketUpVoice;
+
+    [SerializeField] ParticleSystem mainBoosterParticles;
+    [SerializeField] ParticleSystem leftBoosterParticles;
+    [SerializeField] ParticleSystem rightBoosterParticles;
+
+    Rigidbody myRigidBody;
+    AudioSource audioSource;
+
 
     // Start is called before the first frame update
     void Start()
@@ -27,27 +35,68 @@ public class Movement : MonoBehaviour
     {
         if(Input.GetKey(KeyCode.Space))
         {
-            myRigidBody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
-            if (!audioSource.isPlaying)
-                audioSource.Play();
-            
+            StartThrusting();
         }
         else
-            audioSource.Stop();
+        {
+            StopThrusting();
+        }
 
     }
+
     void ProcessRotation()
     {
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
-            ApplyRotation(rotationThrust);
+            RotateLeft();
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
-            ApplyRotation(-rotationThrust);
-
+            RotateRight();
+        }
+        else
+        {
+            StopRotating();
         }
 
+    }
+
+    void StartThrusting()
+    {
+        myRigidBody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
+
+        if (!audioSource.isPlaying)
+            audioSource.PlayOneShot(rocketUpVoice);
+
+        if (!mainBoosterParticles.isPlaying)
+            mainBoosterParticles.Play();
+    }
+
+    void StopThrusting()
+    {
+        audioSource.Stop();
+        mainBoosterParticles.Stop();
+    }
+
+    void RotateLeft()
+    {
+        ApplyRotation(rotationThrust);
+
+        if (!rightBoosterParticles.isPlaying)
+            rightBoosterParticles.Play();
+    }
+    void RotateRight()
+    {
+        ApplyRotation(-rotationThrust);
+
+        if (!leftBoosterParticles.isPlaying)
+            leftBoosterParticles.Play();
+    }
+
+    void StopRotating()
+    {
+        rightBoosterParticles.Stop();
+        leftBoosterParticles.Stop();
     }
 
     void ApplyRotation(float rotationThisFrame)
